@@ -139,7 +139,8 @@ try {
   });
 
   // Запуск сервера
-  const server = app.listen(port, () => {
+  console.log(`Попытка запуска сервера на порту ${port}...`);
+  const server = app.listen(port, '0.0.0.0', () => {
     console.log(`Сервер успешно запущен на порту ${port}`);
     console.log('Приложение готово к работе');
   }).on('error', (err) => {
