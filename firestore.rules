@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Функция для проверки авторизации пользователя
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Функция для проверки владельца документа
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Правила для коллекции пользователей
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isOwner(userId);
+    }
+
+    // Правила для коллекции предсказаний
+    match /predictions/{predictionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+
+    // Правила для коллекции розыгрышей
+    match /raffles/{raffleId} {
+      allow read: if true;
+      allow write: if false; // Только через Cloud Functions
+    }
+  }
+} 

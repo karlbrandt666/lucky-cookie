@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "port": 3000,
+  "start": "NODE_ENV=production PORT=3000 node server.js",
+  "build": "npm install",
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3000"
+  }
+} 

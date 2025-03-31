@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "port": 3000,
+  "start": "npm install && npm run build && NODE_ENV=production PORT=3000 node dist/index.js",
+  "build": "npm install && npm run build",
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3000",
+    "TELEGRAM_BOT_TOKEN": "your_telegram_bot_token_here",
+    "HUGGING_FACE_API_KEY": "your_hugging_face_api_key_here"
+  }
+} 

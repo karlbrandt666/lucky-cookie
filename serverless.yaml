@@ -1,0 +1,26 @@
+service: lucky-cookie
+
+provider:
+  name: yandex-cloud
+  runtime: nodejs16
+  region: ru-central1
+  environment:
+    OPENAI_API_KEY: ${env:OPENAI_API_KEY}
+    TELEGRAM_BOT_TOKEN: ${env:TELEGRAM_BOT_TOKEN}
+
+functions:
+  generatePrediction:
+    handler: src/functions/generatePrediction.handler
+    events:
+      - http:
+          path: /generate-prediction
+          method: post
+          cors: true
+
+  processPayment:
+    handler: src/functions/processPayment.handler
+    events:
+      - http:
+          path: /process-payment
+          method: post
+          cors: true 
