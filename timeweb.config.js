@@ -3,9 +3,7 @@ module.exports = {
   version: '1.0.0',
   scripts: {
     start: 'node server.js',
-    install: 'npm install --no-optional --prefer-offline',
-    build: 'cd client && npm install --no-optional --prefer-offline && npm run build',
-    postinstall: 'cd client && npm install --no-optional --prefer-offline'
+    build: 'npm install && cd client && npm install && npm run build'
   },
   env: {
     NODE_ENV: 'production',
@@ -15,8 +13,6 @@ module.exports = {
   },
   build: {
     command: 'npm run build',
-    output: 'client/build',
-    memory: 2048,
-    timeout: 600
+    output: 'client/build'
   }
 }; 
