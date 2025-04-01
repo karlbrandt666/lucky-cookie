@@ -3,8 +3,9 @@ module.exports = {
   version: '1.0.0',
   scripts: {
     start: 'node server.js',
-    build: 'cd client && npm install && npm run build',
-    postinstall: 'cd client && npm install'
+    install: 'npm run install:all',
+    build: 'npm run build:client',
+    postinstall: 'npm run build:client'
   },
   env: {
     NODE_ENV: 'production',
