@@ -1,19 +1,42 @@
-console.log('Начало загрузки приложения...');
+console.log('=== Начало загрузки приложения ===');
+console.log('Текущая директория:', process.cwd());
+console.log('Версия Node.js:', process.version);
+console.log('Архитектура:', process.arch);
+console.log('Платформа:', process.platform);
+console.log('Пользователь:', process.env.USER || process.env.USERNAME);
+console.log('ID пользователя:', process.getuid ? process.getuid() : 'N/A');
+console.log('ID группы:', process.getgid ? process.getgid() : 'N/A');
+
+// Проверка прав на запись
+const fs = require('fs');
+try {
+  fs.accessSync('.', fs.constants.W_OK);
+  console.log('Есть права на запись в текущую директорию');
+} catch (err) {
+  console.error('Нет прав на запись в текущую директорию:', err);
+}
+
+console.log('Переменные окружения:', {
+  PORT: process.env.PORT,
+  NODE_ENV: process.env.NODE_ENV,
+  HUGGING_FACE_API_KEY: process.env.HUGGING_FACE_API_KEY ? 'Установлен' : 'Не установлен',
+  TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN ? 'Установлен' : 'Не установлен'
+});
 
 try {
+  console.log('Загрузка модулей...');
   const express = require('express');
+  console.log('express загружен');
   const cors = require('cors');
+  console.log('cors загружен');
   const { createHash } = require('crypto');
+  console.log('crypto загружен');
   const fetch = require('node-fetch');
+  console.log('node-fetch загружен');
   require('dotenv').config();
+  console.log('dotenv загружен');
 
-  console.log('Модули успешно загружены');
-  console.log('Переменные окружения:', {
-    PORT: process.env.PORT,
-    NODE_ENV: process.env.NODE_ENV,
-    HUGGING_FACE_API_KEY: process.env.HUGGING_FACE_API_KEY ? 'Установлен' : 'Не установлен',
-    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN ? 'Установлен' : 'Не установлен'
-  });
+  console.log('=== Модули успешно загружены ===');
 
   const app = express();
   const port = process.env.PORT || 3000;
@@ -141,38 +164,56 @@ try {
   // Запуск сервера
   console.log(`Попытка запуска сервера на порту ${port}...`);
   const server = app.listen(port, '0.0.0.0', () => {
-    console.log(`Сервер успешно запущен на порту ${port}`);
-    console.log('Приложение готово к работе');
+    console.log(`[SERVER] Сервер успешно запущен на порту ${port}`);
+    console.log(`[SERVER] Приложение готово к работе`);
+    console.log(`[SERVER] Слушаю на http://0.0.0.0:${port}`);
   }).on('error', (err) => {
-    console.error('Ошибка при запуске сервера:', err);
+    console.error('[SERVER] Ошибка при запуске сервера:', err);
     if (err.code === 'EADDRINUSE') {
-      console.error(`Ошибка: Порт ${port} уже используется`);
+      console.error(`[SERVER] Ошибка: Порт ${port} уже используется`);
       process.exit(1);
     } else {
-      console.error('Неизвестная ошибка при запуске сервера:', err);
+      console.error('[SERVER] Неизвестная ошибка при запуске сервера:', err);
     }
+  });
+
+  // Проверка состояния сервера
+  server.on('listening', () => {
+    const address = server.address();
+    console.log(`[SERVER] Сервер слушает на ${address.address}:${address.port}`);
   });
 
   // Обработка завершения работы
   process.on('SIGTERM', () => {
-    console.log('Получен сигнал SIGTERM. Завершение работы...');
+    console.log('[SERVER] Получен сигнал SIGTERM. Завершение работы...');
     server.close(() => {
-      console.log('Сервер остановлен');
+      console.log('[SERVER] Сервер остановлен');
       process.exit(0);
     });
   });
 
-  // Обработка необработанных исключений
-  process.on('uncaughtException', (err) => {
-    console.error('Необработанное исключение:', err);
-    process.exit(1);
+  // Обработка необработанных ошибок
+  process.on('uncaughtException', (error) => {
+    console.error('[ERROR] Необработанная ошибка:', error);
+    console.error('[ERROR] Стек вызовов:', error.stack);
   });
 
   process.on('unhandledRejection', (reason, promise) => {
-    console.error('Необработанное отклонение промиса:', reason);
-    process.exit(1);
+    console.error('[ERROR] Необработанное отклонение промиса:', reason);
+    console.error('[ERROR] Стек вызовов:', reason.stack);
   });
+
+  // Добавляем обработчик для проверки состояния сервера
+  setInterval(() => {
+    if (server.listening) {
+      console.log(`[HEALTH] Сервер работает на порту ${port}`);
+    } else {
+      console.log('[HEALTH] Сервер не слушает порт');
+    }
+  }, 5000);
+
 } catch (error) {
-  console.error('Критическая ошибка при запуске приложения:', error);
+  console.error('[CRITICAL] Критическая ошибка при запуске приложения:', error);
+  console.error('[CRITICAL] Стек вызовов:', error.stack);
   process.exit(1);
 } 

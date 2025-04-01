@@ -1,13 +1,21 @@
 # Lucky Cookie Telegram Bot
 
-Telegram бот для генерации предсказаний в стиле печенья с предсказаниями.
+Telegram бот для генерации предсказаний с использованием AI модели FRED-T5-1.7B от Hugging Face.
 
-## Функциональность
+## Возможности
 
-- Генерация случайных предсказаний
-- Интеграция с Telegram
-- Модерация контента
-- Система подписок
+- Генерация креативных предсказаний
+- Интеграция с Telegram Web App
+- Безопасная валидация данных от Telegram
+- Поддержка платежей (заготовка)
+
+## Технологии
+
+- Node.js
+- Express.js
+- Telegram Bot API
+- Hugging Face API
+- node-fetch
 
 ## Установка
 
@@ -23,43 +31,41 @@ npm install
 ```
 
 3. Создайте файл `.env` и добавьте необходимые переменные окружения:
-```
-TELEGRAM_BOT_TOKEN=your_bot_token_here
+```env
+HUGGING_FACE_API_KEY=your_api_key
+TELEGRAM_BOT_TOKEN=your_bot_token
+PORT=3000
 ```
 
 4. Запустите приложение:
 ```bash
+npm start
+```
+
+## Разработка
+
+Для запуска в режиме разработки с автоматической перезагрузкой:
+```bash
 npm run dev
 ```
 
-## Развертывание
+## API Endpoints
 
-Проект настроен для развертывания на TimeWeb Cloud Apps. Для деплоя:
+### POST /api/generate-prediction
+Генерирует новое предсказание.
 
-1. Создайте новое приложение в TimeWeb Cloud Apps
-2. Подключите GitHub репозиторий
-3. Настройте переменные окружения в панели управления TimeWeb
-4. Запустите деплой
+### POST /api/process-payment
+Обрабатывает платеж (заготовка).
 
-## Структура проекта
+## Безопасность
 
-```
-lucky-cookie/
-├── src/
-│   ├── functions/
-│   │   └── generatePrediction.ts
-│   ├── services/
-│   │   └── PaymentService.ts
-│   └── index.ts
-├── package.json
-├── tsconfig.json
-├── timeweb.json
-└── README.md
-```
+- Все запросы от Telegram проверяются на подлинность
+- API ключи хранятся в переменных окружения
+- Используется CORS для защиты от несанкционированных запросов
 
 ## Лицензия
 
-MIT 
+MIT
 
 # Telegram Fortune Cookie Mini App
 
