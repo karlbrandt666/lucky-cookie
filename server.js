@@ -11,12 +11,21 @@ console.log('ID группы:', process.getgid ? process.getgid() : 'N/A');
 const fs = require('fs');
 try {
   fs.accessSync('.', fs.constants.W_OK);
-  console.log('Есть права на запись в текущую директорию');
+  console.log('[SYSTEM] Есть права на запись в текущую директорию');
 } catch (err) {
-  console.error('Нет прав на запись в текущую директорию:', err);
+  console.error('[SYSTEM] Нет прав на запись в текущую директорию:', err);
 }
 
-console.log('Переменные окружения:', {
+// Проверка переменных окружения
+const requiredEnvVars = ['HUGGING_FACE_API_KEY', 'TELEGRAM_BOT_TOKEN'];
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  console.error('[CONFIG] Отсутствуют обязательные переменные окружения:', missingEnvVars.join(', '));
+  // Не завершаем процесс, продолжаем работу
+}
+
+console.log('[CONFIG] Переменные окружения:', {
   PORT: process.env.PORT,
   NODE_ENV: process.env.NODE_ENV,
   HUGGING_FACE_API_KEY: process.env.HUGGING_FACE_API_KEY ? 'Установлен' : 'Не установлен',
@@ -24,17 +33,17 @@ console.log('Переменные окружения:', {
 });
 
 try {
-  console.log('Загрузка модулей...');
+  console.log('[SYSTEM] Загрузка модулей...');
   const express = require('express');
-  console.log('express загружен');
+  console.log('[SYSTEM] express загружен');
   const cors = require('cors');
-  console.log('cors загружен');
+  console.log('[SYSTEM] cors загружен');
   const { createHash } = require('crypto');
-  console.log('crypto загружен');
+  console.log('[SYSTEM] crypto загружен');
   const fetch = require('node-fetch');
-  console.log('node-fetch загружен');
+  console.log('[SYSTEM] node-fetch загружен');
   require('dotenv').config();
-  console.log('dotenv загружен');
+  console.log('[SYSTEM] dotenv загружен');
 
   console.log('=== Модули успешно загружены ===');
 
@@ -52,11 +61,13 @@ try {
 
   // Проверка необходимых переменных окружения
   if (!API_KEY) {
-    throw new Error('HUGGING_FACE_API_KEY не установлен');
+    console.error('[CONFIG] HUGGING_FACE_API_KEY не установлен');
+    // Не завершаем процесс, продолжаем работу
   }
 
   if (!TELEGRAM_BOT_TOKEN) {
-    throw new Error('TELEGRAM_BOT_TOKEN не установлен');
+    console.error('[CONFIG] TELEGRAM_BOT_TOKEN не установлен');
+    // Не завершаем процесс, продолжаем работу
   }
 
   // Валидация initData
@@ -162,7 +173,7 @@ try {
   });
 
   // Запуск сервера
-  console.log(`Попытка запуска сервера на порту ${port}...`);
+  console.log(`[SERVER] Попытка запуска сервера на порту ${port}...`);
   const server = app.listen(port, '0.0.0.0', () => {
     console.log(`[SERVER] Сервер успешно запущен на порту ${port}`);
     console.log(`[SERVER] Приложение готово к работе`);
@@ -174,6 +185,10 @@ try {
       process.exit(1);
     } else {
       console.error('[SERVER] Неизвестная ошибка при запуске сервера:', err);
+      // Не завершаем процесс, пробуем использовать другой порт
+      const newPort = port + 1;
+      console.log(`[SERVER] Попытка использовать порт ${newPort}...`);
+      server.listen(newPort, '0.0.0.0');
     }
   });
 
@@ -194,13 +209,15 @@ try {
 
   // Обработка необработанных ошибок
   process.on('uncaughtException', (error) => {
-    console.error('[ERROR] Необработанная ошибка:', error);
-    console.error('[ERROR] Стек вызовов:', error.stack);
+    console.error('[CRITICAL] Необработанная ошибка:', error);
+    console.error('[CRITICAL] Стек вызовов:', error.stack);
+    // Не завершаем процесс, даем серверу шанс восстановиться
   });
 
   process.on('unhandledRejection', (reason, promise) => {
     console.error('[ERROR] Необработанное отклонение промиса:', reason);
     console.error('[ERROR] Стек вызовов:', reason.stack);
+    // Не завершаем процесс, даем серверу шанс восстановиться
   });
 
   // Добавляем обработчик для проверки состояния сервера
@@ -215,5 +232,9 @@ try {
 } catch (error) {
   console.error('[CRITICAL] Критическая ошибка при запуске приложения:', error);
   console.error('[CRITICAL] Стек вызовов:', error.stack);
-  process.exit(1);
+  // Не завершаем процесс сразу, даем шанс на восстановление
+  setTimeout(() => {
+    console.log('[CRITICAL] Попытка перезапуска приложения...');
+    process.exit(1);
+  }, 5000);
 } 
