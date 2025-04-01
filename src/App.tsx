@@ -1,93 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Cookie from './components/Cookie';
-import { PaymentService } from './services/PaymentService';
-import { PredictionService } from './services/PredictionService';
-import { Prediction } from './types';
-import './styles/Cookie.css';
+import React, { useState, useCallback } from 'react';
+import { FortuneCookie } from './components/FortuneCookie/FortuneCookie';
+import { getRandomFortune } from './data/fortunes';
+import styles from './App.module.css';
 
 const App: React.FC = () => {
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const [currentPrediction, setCurrentPrediction] = useState<Prediction | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [fortune, setFortune] = useState(getRandomFortune());
+  const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    PredictionService.initialize();
+  const handleOpen = useCallback(() => {
+    setIsOpen(true);
   }, []);
 
-  const handleCookieBreak = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Обработка платежа
-      const paymentResult = await PaymentService.processPayment();
-      
-      if (!paymentResult.success) {
-        throw new Error(paymentResult.error || 'Ошибка при обработке платежа');
-      }
-
-      // Генерация предсказания
-      const prediction = await PredictionService.generatePrediction();
-      
-      // Модерация предсказания
-      const isSafe = await PredictionService.moderatePrediction(prediction.text);
-      
-      if (!isSafe) {
-        throw new Error('Предсказание не прошло модерацию');
-      }
-
-      setCurrentPrediction(prediction);
-      setPredictions(prev => [...prev, prediction]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Произошла ошибка');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleNewFortune = useCallback(() => {
+    setFortune(getRandomFortune());
+    setIsOpen(false);
+  }, []);
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>Магическое Печенье</h1>
-        <p>Ваша коллекция: {predictions.length}</p>
+    <div className={styles.app}>
+      <header className={styles.header}>
+        <h1>Печенье с предсказанием</h1>
       </header>
-
-      <main className="app-main">
-        <Cookie onBreak={handleCookieBreak} />
-        
-        <div className="prediction-container">
-          {currentPrediction && (
-            <motion.div
-              className="prediction-card"
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -50 }}
-              key="prediction"
-            >
-              <h2>Ваше предсказание:</h2>
-              <p>{currentPrediction.text}</p>
-            </motion.div>
-          )}
-        </div>
-
-        {error && (
-          <motion.div
-            className="error-message"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+      <main className={styles.main}>
+        <FortuneCookie
+          fortune={fortune}
+          onOpen={handleOpen}
+          isOpen={isOpen}
+        />
+        {isOpen && (
+          <button
+            className={styles.button}
+            onClick={handleNewFortune}
+            aria-label="Получить новое предсказание"
           >
-            {error}
-          </motion.div>
-        )}
-
-        {isLoading && (
-          <div className="loading">
-            Загрузка...
-          </div>
+            Новое предсказание
+          </button>
         )}
       </main>
+      <footer className={styles.footer}>
+        <p>Нажмите на печенье, чтобы узнать предсказание</p>
+      </footer>
     </div>
   );
 };
