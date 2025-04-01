@@ -1,0 +1,54 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1000px;
+  margin: 2rem 0;
+}
+
+.cookie {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  transition: transform 0.5s;
+}
+
+.cookieFront,
+.cookieBack {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e6b17a, #d4a373);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border: 8px solid #fff;
+}
+
+.cookieBack {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, #d4a373, #e6b17a);
+}
+
+.cookieText {
+  font-size: 3.5rem;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  font-weight: bold;
+}
+
+.fortune {
+  color: #fff;
+  font-size: 1.2rem;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  line-height: 1.4;
+  padding: 10px;
+  font-weight: 500;
+} 

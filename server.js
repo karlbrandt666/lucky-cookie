@@ -44,6 +44,10 @@ try {
   console.log('[SYSTEM] node-fetch загружен');
   require('dotenv').config();
   console.log('[SYSTEM] dotenv загружен');
+  const { Telegraf } = require('telegraf');
+  console.log('[SYSTEM] telegraf загружен');
+  const axios = require('axios');
+  console.log('[SYSTEM] axios загружен');
 
   console.log('=== Модули успешно загружены ===');
 
@@ -54,121 +58,53 @@ try {
   app.use(cors());
   app.use(express.json());
 
-  // Конфигурация
-  const HUGGING_FACE_API_URL = 'https://api-inference.huggingface.co/models/ai-forever/FRED-T5-1.7B';
-  const API_KEY = process.env.HUGGING_FACE_API_KEY;
-  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  // Инициализация бота
+  const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
-  // Проверка необходимых переменных окружения
-  if (!API_KEY) {
-    console.error('[CONFIG] HUGGING_FACE_API_KEY не установлен');
-    // Не завершаем процесс, продолжаем работу
-  }
-
-  if (!TELEGRAM_BOT_TOKEN) {
-    console.error('[CONFIG] TELEGRAM_BOT_TOKEN не установлен');
-    // Не завершаем процесс, продолжаем работу
-  }
-
-  // Валидация initData
-  function validateInitData(initData) {
+  // Функция для генерации предсказания через Hugging Face API
+  async function generateFortune() {
     try {
-      const params = new URLSearchParams(initData);
-      const hash = params.get('hash');
-      params.delete('hash');
-
-      // Сортируем параметры по алфавиту
-      const sortedParams = Array.from(params.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([key, value]) => `${key}=${value}`)
-        .join('\n');
-
-      // Создаем секретную строку
-      const secret = createHash('sha256')
-        .update(TELEGRAM_BOT_TOKEN || '')
-        .digest();
-
-      // Создаем хеш из параметров
-      const calculatedHash = createHash('sha256')
-        .update(sortedParams)
-        .update(secret)
-        .digest('hex');
-
-      return calculatedHash === hash;
-    } catch (error) {
-      console.error('Ошибка валидации initData:', error);
-      return false;
-    }
-  }
-
-  // Генерация предсказания
-  async function generatePrediction() {
-    try {
-      const prompt = `Сгенерируй креативное предсказание для печенья (1 предложение).
-Тема: юмор, жизненные советы, абсурдные ситуации.
-Примеры:
-- 'Завтра ты встретишь человека в костюме жирафа. Скажи ему «Привет, Миша!».
-- 'Не ешь суп в темноте. Это опасно для твоих штанов.'
-Избегай негатива и банальностей.`;
-
-      const response = await fetch(HUGGING_FACE_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: prompt,
+      const response = await axios.post(
+        'https://api-inference.huggingface.co/models/facebook/opt-350m',
+        {
+          inputs: 'Generate a short, positive fortune cookie message in Russian:',
           parameters: {
             max_length: 100,
             temperature: 0.7,
-            top_p: 0.9
+            top_p: 0.9,
           }
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Ошибка при запросе к Hugging Face');
-      }
-
-      const data = await response.json();
-      return data[0].generated_text.trim();
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      return response.data[0].generated_text;
     } catch (error) {
-      console.error('Ошибка генерации предсказания:', error);
-      return 'Сегодня будет хороший день!';
+      console.error('Error generating fortune:', error);
+      return 'Сегодня будет удачный день!';
     }
   }
 
-  // API endpoints
-  app.post('/api/generate-prediction', async (req, res) => {
-    try {
-      const predictionText = await generatePrediction();
-      res.json({
-        text: predictionText,
-        date: new Date().toISOString(),
-        source: 'paid'
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Ошибка при генерации предсказания' });
-    }
+  // Обработка команды /start
+  bot.command('start', async (ctx) => {
+    const fortune = await generateFortune();
+    await ctx.reply(`Привет! Я бот с предсказаниями. Вот твое предсказание на сегодня:\n\n${fortune}`);
   });
 
-  app.post('/api/process-payment', async (req, res) => {
+  // Запуск бота
+  bot.launch();
+
+  // API endpoint для получения предсказания
+  app.get('/api/fortune', async (req, res) => {
     try {
-      const { initData, amount } = req.body;
-
-      if (!validateInitData(initData)) {
-        return res.status(400).json({ error: 'Неверные данные инициализации' });
-      }
-
-      // Здесь должна быть интеграция с платежной системой
-      // В данном примере мы просто возвращаем успешный результат
-      res.json({
-        success: true,
-        transactionId: `test_${Date.now()}`
-      });
+      const fortune = await generateFortune();
+      res.json({ fortune });
     } catch (error) {
-      res.status(500).json({ error: 'Ошибка при обработке платежа' });
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 

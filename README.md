@@ -1,3 +1,103 @@
+# Lucky Cookie - Telegram Mini App
+
+Приложение для получения предсказаний через Telegram Mini App с использованием AI.
+
+## Функциональность
+
+- Интеграция с Telegram Mini App
+- Генерация предсказаний через Hugging Face API
+- Анимированное печенье с предсказаниями
+- Адаптивный дизайн
+
+## Требования
+
+- Node.js 16+
+- npm или yarn
+- Telegram Bot Token
+- Hugging Face API Key
+
+## Установка
+
+1. Клонируйте репозиторий:
+```bash
+git clone https://github.com/your-username/lucky-cookie.git
+cd lucky-cookie
+```
+
+2. Установите зависимости:
+```bash
+# Установка зависимостей сервера
+npm install
+
+# Установка зависимостей клиента
+cd client
+npm install
+```
+
+3. Создайте файл `.env` в корневой директории:
+```env
+PORT=3000
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+HUGGINGFACE_API_KEY=your_huggingface_api_key
+```
+
+4. Создайте файл `.env` в директории client:
+```env
+PORT=3001
+HOST=localhost
+BROWSER=none
+REACT_APP_API_URL=https://your-timeweb-domain.com
+```
+
+## Разработка
+
+1. Запуск сервера:
+```bash
+npm start
+```
+
+2. Запуск клиента:
+```bash
+cd client
+npm start
+```
+
+## Деплой на TimeWeb
+
+1. Создайте новый проект на TimeWeb
+2. Подключите GitHub репозиторий
+3. Настройте переменные окружения в панели управления TimeWeb:
+   - `TELEGRAM_BOT_TOKEN`
+   - `HUGGINGFACE_API_KEY`
+   - `PORT=3000`
+   - `NODE_ENV=production`
+
+4. Настройки деплоя:
+   - Build Command: `npm run build`
+   - Start Command: `npm start`
+   - Node.js версия: 16.x
+
+5. Домен: Укажите ваш домен в настройках проекта
+
+## Структура проекта
+
+```
+lucky-cookie/
+├── client/                 # React приложение
+│   ├── src/
+│   │   ├── components/    # React компоненты
+│   │   ├── data/         # Данные и API
+│   │   └── styles/       # CSS модули
+│   └── public/           # Статические файлы
+├── server.js             # Express сервер
+├── timeweb.config.js     # Конфигурация для TimeWeb
+└── package.json         # Зависимости проекта
+```
+
+## Лицензия
+
+MIT 
+
 # Lucky Cookie Telegram Bot
 
 Telegram бот для генерации предсказаний с использованием AI модели FRED-T5-1.7B от Hugging Face.
