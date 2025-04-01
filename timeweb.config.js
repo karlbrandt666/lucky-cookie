@@ -3,12 +3,17 @@ module.exports = {
   version: '1.0.0',
   scripts: {
     start: 'node server.js',
-    build: 'cd client && npm install && npm run build'
+    build: 'cd client && npm install && npm run build',
+    postinstall: 'cd client && npm install'
   },
   env: {
     NODE_ENV: 'production',
     PORT: '3000',
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
     HUGGINGFACE_API_KEY: process.env.HUGGINGFACE_API_KEY
+  },
+  build: {
+    command: 'npm run build',
+    output: 'client/build'
   }
 }; 
