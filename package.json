@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "install:all": "npm install && cd client && npm install",
+    "install:all": "npm install --no-optional && cd client && npm install --no-optional",
     "build:client": "cd client && npm run build",
     "build": "npm run install:all && npm run build:client",
     "postinstall": "npm run install:all"

@@ -3,9 +3,9 @@ module.exports = {
   version: '1.0.0',
   scripts: {
     start: 'node server.js',
-    install: 'npm run install:all',
-    build: 'npm run build:client',
-    postinstall: 'npm run build:client'
+    install: 'npm install --no-optional',
+    build: 'cd client && npm install --no-optional && npm run build',
+    postinstall: 'cd client && npm install --no-optional'
   },
   env: {
     NODE_ENV: 'production',
@@ -17,12 +17,5 @@ module.exports = {
     command: 'npm run build',
     output: 'client/build',
     memory: 2048
-  },
-  systemDependencies: [
-    'python3',
-    'python3-pip',
-    'build-essential',
-    'nodejs',
-    'npm'
-  ]
+  }
 }; 
