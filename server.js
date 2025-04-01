@@ -40,8 +40,6 @@ try {
   console.log('[SYSTEM] cors загружен');
   const { createHash } = require('crypto');
   console.log('[SYSTEM] crypto загружен');
-  const fetch = require('node-fetch');
-  console.log('[SYSTEM] node-fetch загружен');
   require('dotenv').config();
   console.log('[SYSTEM] dotenv загружен');
   const { Telegraf } = require('telegraf');
@@ -76,7 +74,7 @@ try {
         },
         {
           headers: {
-            'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+            'Authorization': `Bearer ${process.env.HUGGING_FACE_API_KEY}`,
             'Content-Type': 'application/json'
           }
         }
@@ -103,74 +101,27 @@ try {
       const fortune = await generateFortune();
       res.json({ fortune });
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error in /api/fortune:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
 
+  // Обработка ошибок
+  app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  });
+
   // Запуск сервера
-  console.log(`[SERVER] Попытка запуска сервера на порту ${port}...`);
-  const server = app.listen(port, '0.0.0.0', () => {
-    console.log(`[SERVER] Сервер успешно запущен на порту ${port}`);
-    console.log(`[SERVER] Приложение готово к работе`);
-    console.log(`[SERVER] Слушаю на http://0.0.0.0:${port}`);
-  }).on('error', (err) => {
-    console.error('[SERVER] Ошибка при запуске сервера:', err);
-    if (err.code === 'EADDRINUSE') {
-      console.error(`[SERVER] Ошибка: Порт ${port} уже используется`);
-      process.exit(1);
-    } else {
-      console.error('[SERVER] Неизвестная ошибка при запуске сервера:', err);
-      // Не завершаем процесс, пробуем использовать другой порт
-      const newPort = port + 1;
-      console.log(`[SERVER] Попытка использовать порт ${newPort}...`);
-      server.listen(newPort, '0.0.0.0');
-    }
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`[SERVER] Сервер запущен на порту ${port}`);
   });
 
-  // Проверка состояния сервера
-  server.on('listening', () => {
-    const address = server.address();
-    console.log(`[SERVER] Сервер слушает на ${address.address}:${address.port}`);
-  });
-
-  // Обработка завершения работы
-  process.on('SIGTERM', () => {
-    console.log('[SERVER] Получен сигнал SIGTERM. Завершение работы...');
-    server.close(() => {
-      console.log('[SERVER] Сервер остановлен');
-      process.exit(0);
-    });
-  });
-
-  // Обработка необработанных ошибок
-  process.on('uncaughtException', (error) => {
-    console.error('[CRITICAL] Необработанная ошибка:', error);
-    console.error('[CRITICAL] Стек вызовов:', error.stack);
-    // Не завершаем процесс, даем серверу шанс восстановиться
-  });
-
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('[ERROR] Необработанное отклонение промиса:', reason);
-    console.error('[ERROR] Стек вызовов:', reason.stack);
-    // Не завершаем процесс, даем серверу шанс восстановиться
-  });
-
-  // Добавляем обработчик для проверки состояния сервера
-  setInterval(() => {
-    if (server.listening) {
-      console.log(`[HEALTH] Сервер работает на порту ${port}`);
-    } else {
-      console.log('[HEALTH] Сервер не слушает порт');
-    }
-  }, 5000);
+  // Graceful shutdown
+  process.once('SIGINT', () => bot.stop('SIGINT'));
+  process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
 } catch (error) {
-  console.error('[CRITICAL] Критическая ошибка при запуске приложения:', error);
-  console.error('[CRITICAL] Стек вызовов:', error.stack);
-  // Не завершаем процесс сразу, даем шанс на восстановление
-  setTimeout(() => {
-    console.log('[CRITICAL] Попытка перезапуска приложения...');
-    process.exit(1);
-  }, 5000);
+  console.error('[ERROR] Критическая ошибка при запуске:', error);
+  process.exit(1);
 } 

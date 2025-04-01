@@ -15,6 +15,7 @@ module.exports = {
   },
   build: {
     command: 'npm run build',
-    output: 'client/build'
+    output: 'client/build',
+    memory: 2048
   }
 }; 
