@@ -17,5 +17,12 @@ module.exports = {
     command: 'npm run build',
     output: 'client/build',
     memory: 2048
-  }
+  },
+  systemDependencies: [
+    'python3',
+    'python3-pip',
+    'build-essential',
+    'nodejs',
+    'npm'
+  ]
 }; 
